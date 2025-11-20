@@ -1,0 +1,32 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+venv/
+.env
+.env.*
+*.env
+
+# Logs
+*.log
+
+# IDE settings
+.vscode/
+.idea/
+
+# pytest cache
+.pytest_cache/
+
+# Mypy / Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Local SQLite DB (if any)
+*.sqlite3
+
+# Byte-compiled / optimized / DLL files
+*.so
