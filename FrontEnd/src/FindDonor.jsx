@@ -90,7 +90,7 @@ const handleSubmit = async (e) => {
   setError('');
 
   try {
-    const response = await fetch('http://localhost:3000', {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/donors/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
