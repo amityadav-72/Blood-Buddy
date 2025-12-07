@@ -9,3 +9,6 @@ MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client["bloodbuddy"]
 donor_collection = db["donors"]
+
+print("Databases:", client.list_database_names())
+
