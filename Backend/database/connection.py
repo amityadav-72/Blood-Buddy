@@ -12,5 +12,5 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = MongoClient(MONGO_URI)
 
 # Use your database and collection
-db = client["blood_buddy"]
+db = client["bloodbuddy"]
 donor_collection = db["donors"]
