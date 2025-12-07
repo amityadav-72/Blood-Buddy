@@ -10,11 +10,14 @@ function DonorFilterSection() {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Default map center — no location fetching until user clicks
-  const [mapCenter, setMapCenter] = useState([20.9374, 77.7796]); // Amravati, Maharashtra
+  // Store map center
+  const [mapCenter, setMapCenter] = useState([20.9374, 77.7796]);
+
+  // NEW STATES (Required for routing feature)
+  const [userLocation, setUserLocation] = useState(null);
+  const [selectedDonor, setSelectedDonor] = useState(null);
 
   const handleFetch = async () => {
-    // ✅ Prevent fetch when manual selected but no text entered
     if (locationOption === "manual" && !manualLocation.trim()) {
       alert("Please enter a location!");
       return;
@@ -25,7 +28,6 @@ function DonorFilterSection() {
 
     try {
       if (locationOption === "auto") {
-        // ✅ Ask for location only when user clicks
         const position = await new Promise((resolve, reject) =>
           navigator.geolocation.getCurrentPosition(resolve, reject)
         );
@@ -36,29 +38,26 @@ function DonorFilterSection() {
           `https://nominatim.openstreetmap.org/search?format=json&q=${manualLocation}`
         );
         if (res.data.length === 0) throw new Error("Location not found!");
+
         lat = res.data[0].lat;
         lon = res.data[0].lon;
       }
 
+      // Update map & user's location
       setMapCenter([parseFloat(lat), parseFloat(lon)]);
+      setUserLocation({ lat: parseFloat(lat), lon: parseFloat(lon) });
 
+      // Fetch donors from backend
       const donorRes = await axios.get(
-  `${process.env.REACT_APP_API_URL}/donors/nearby`,
-  {
-    params: {
-      lat,
-      lon,
-      blood_group: bloodGroup,
-      limit,
-    },
-  }
-);
-
+        `${process.env.REACT_APP_API_URL}/donors/nearby`,
+        {
+          params: { lat, lon, blood_group: bloodGroup, limit },
+        }
+      );
 
       setDonors(donorRes.data.donors || donorRes.data);
     } catch (error) {
       console.error(error);
-      // ✅ Show simple alert only on real error, not empty input
       alert("Error fetching donors. Please check your location or backend.");
     } finally {
       setLoading(false);
@@ -69,11 +68,7 @@ function DonorFilterSection() {
     <section style={{ padding: "70px 0 40px", backgroundColor: "#fafafa" }}>
       <div
         className="container"
-        style={{
-          maxWidth: "1000px",
-          margin: "auto",
-          textAlign: "center",
-        }}
+        style={{ maxWidth: "1000px", margin: "auto", textAlign: "center" }}
       >
         <h2
           style={{
@@ -86,7 +81,7 @@ function DonorFilterSection() {
           🩸 Find Blood Donors Near You
         </h2>
 
-        {/* === Filter Controls Row === */}
+        {/* FILTER CONTROLS */}
         <div
           style={{
             display: "flex",
@@ -100,7 +95,6 @@ function DonorFilterSection() {
             boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
           }}
         >
-          {/* Location Options */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <label>
               <input
@@ -109,9 +103,10 @@ function DonorFilterSection() {
                 value="auto"
                 checked={locationOption === "auto"}
                 onChange={(e) => setLocationOption(e.target.value)}
-              />{" "}
+              />
               Use My Location
             </label>
+
             <label>
               <input
                 type="radio"
@@ -119,12 +114,11 @@ function DonorFilterSection() {
                 value="manual"
                 checked={locationOption === "manual"}
                 onChange={(e) => setLocationOption(e.target.value)}
-              />{" "}
+              />
               Manual
             </label>
           </div>
 
-          {/* Manual Location Input */}
           {locationOption === "manual" && (
             <input
               type="text"
@@ -140,7 +134,6 @@ function DonorFilterSection() {
             />
           )}
 
-          {/* Blood Group Dropdown */}
           <select
             value={bloodGroup}
             onChange={(e) => setBloodGroup(e.target.value)}
@@ -161,7 +154,6 @@ function DonorFilterSection() {
             <option value="O-">O-</option>
           </select>
 
-          {/* Limit Dropdown */}
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
@@ -177,7 +169,6 @@ function DonorFilterSection() {
             <option value={100}>100</option>
           </select>
 
-          {/* Search Button */}
           <button
             onClick={handleFetch}
             disabled={loading}
@@ -189,37 +180,29 @@ function DonorFilterSection() {
               borderRadius: "8px",
               fontWeight: "600",
               cursor: "pointer",
-              transition: "0.3s",
             }}
           >
             {loading ? "Searching..." : "Find Donors"}
           </button>
         </div>
 
-        {/* === Map === */}
-        <div
-          style={{
-            marginTop: "40px",
-            borderRadius: "10px",
-            overflow: "hidden",
-          }}
-        >
-          <MapView donors={donors} center={mapCenter} />
+        {/* MAP */}
+        <div style={{ marginTop: "40px", borderRadius: "10px", overflow: "hidden" }}>
+          <MapView
+            donors={donors}
+            center={mapCenter}
+            userLocation={userLocation}
+            selectedDonor={selectedDonor}
+          />
         </div>
 
-        {/* === Donor Table === */}
+        {/* DONOR TABLE */}
         {donors.length > 0 && (
           <div style={{ marginTop: "50px", overflowX: "auto" }}>
-            <h3
-              style={{
-                textAlign: "center",
-                color: "#222",
-                marginBottom: "15px",
-                fontWeight: "600",
-              }}
-            >
+            <h3 style={{ textAlign: "center", marginBottom: "15px" }}>
               Nearby Donors
             </h3>
+
             <table
               style={{
                 width: "100%",
@@ -238,13 +221,18 @@ function DonorFilterSection() {
                   <th style={{ padding: "12px" }}>Contact</th>
                 </tr>
               </thead>
+
               <tbody>
                 {donors.map((donor, index) => (
                   <tr
                     key={index}
+                    onClick={() => setSelectedDonor(donor)}
                     style={{
                       textAlign: "center",
                       borderBottom: "1px solid #eee",
+                      cursor: "pointer",
+                      backgroundColor:
+                        selectedDonor?.name === donor.name ? "#ffe6e6" : "white",
                     }}
                   >
                     <td style={{ padding: "10px" }}>{donor.name}</td>
@@ -252,13 +240,7 @@ function DonorFilterSection() {
                     <td style={{ padding: "10px" }}>
                       {donor.distance_km ? donor.distance_km : "—"}
                     </td>
-                    <td
-                      style={{
-                        padding: "10px",
-                        color: "#0077cc",
-                        fontWeight: "500",
-                      }}
-                    >
+                    <td style={{ padding: "10px", color: "#0077cc" }}>
                       {donor.contact}
                     </td>
                   </tr>
