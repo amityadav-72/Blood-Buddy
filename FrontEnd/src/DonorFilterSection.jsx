@@ -42,14 +42,18 @@ function DonorFilterSection() {
 
       setMapCenter([parseFloat(lat), parseFloat(lon)]);
 
-      const donorRes = await axios.get("http://127.0.0.1:8000/donors/nearby", {
-        params: {
-          lat,
-          lon,
-          blood_group: bloodGroup,
-          limit,
-        },
-      });
+      const donorRes = await axios.get(
+  `${process.env.REACT_APP_API_URL}/donors/nearby`,
+  {
+    params: {
+      lat,
+      lon,
+      blood_group: bloodGroup,
+      limit,
+    },
+  }
+);
+
 
       setDonors(donorRes.data.donors || donorRes.data);
     } catch (error) {
