@@ -3,17 +3,18 @@ from models.donor_model import Donor
 from database.connection import donor_collection
 from utils.geo_utils import calculate_distance
 
-router = APIRouter()
+# Add prefix so routes load correctly
+router = APIRouter(prefix="/donors")
 
 # 🩸 Add new donor
-@router.post("/donors/add")
+@router.post("/add")
 def add_donor(donor: Donor):
     donor_dict = donor.dict()
     result = donor_collection.insert_one(donor_dict)
     return {"message": "Donor added successfully", "id": str(result.inserted_id)}
 
 # 📍 Get nearest donors (with optional filters)
-@router.get("/donors/nearby")
+@router.get("/nearby")
 def get_nearby_donors(
     lat: float = Query(...),
     lon: float = Query(...),
@@ -24,10 +25,11 @@ def get_nearby_donors(
     if not donors:
         raise HTTPException(status_code=404, detail="No donors found")
 
-    # Filter by blood group if provided
+    # blood group filter
     if blood_group:
         donors = [d for d in donors if d.get("blood_group") == blood_group]
 
+    # calculate distance
     for donor in donors:
         donor["distance_km"] = round(
             calculate_distance(lat, lon, donor["latitude"], donor["longitude"]), 2
