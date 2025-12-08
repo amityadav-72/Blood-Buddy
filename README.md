@@ -42,11 +42,13 @@ BloodBuddy is a powerful **location-based blood donor finder** that helps users 
 
 ## 📸 Screenshots  
 
-_Add real screenshots later — placeholders below:_
+## 📸 Screenshots  
 
 | Home Page | Map View | Donor List |
 |-----------|----------|------------|
-| ![](https://via.placeholder.com/300) | ![](https://via.placeholder.com/300) | ![](https://via.placeholder.com/300) |
+| <img width="500" alt="Home Page" src="https://github.com/user-attachments/assets/e0bfd9f3-f8f6-4f4f-bc79-f0f6f813e42e" /> | <img width="500" alt="Map View" src="https://github.com/user-attachments/assets/f889a4dc-b04b-464f-bead-a5173d968eda" /> | <img width="500" alt="Donor List" src="https://github.com/user-attachments/assets/f3fdcc93-3dac-4af7-aad6-d467258b0fb6" /> |
+
+
 
 ---
 
@@ -291,3 +293,9 @@ Contributions are welcome!
 If you like this project, please ⭐ **star the repository** and share it with others.  
 
 ---
+## 👨‍💻 Author  
+
+**Amit Kumar Yadav**
+
+🔗 **GitHub:** [github.com/amityadav-72](https://github.com/amityadav-72)  
+🔗 **LinkedIn:** [linkedin.com/in/amityadav72](https://www.linkedin.com/in/amityadav72)
