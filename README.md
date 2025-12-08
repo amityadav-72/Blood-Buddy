@@ -42,7 +42,6 @@ BloodBuddy is a powerful **location-based blood donor finder** that helps users 
 
 ## 📸 Screenshots  
 
-## 📸 Screenshots  
 
 | Home Page | Map View | Donor List |
 |-----------|----------|------------|
