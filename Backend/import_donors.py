@@ -18,10 +18,10 @@ client = MongoClient(MONGO_URI)
 db = client["bloodbuddy"]
 donor_collection = db["donors"]
 
-# Create unique index on mobile (contact)
-donor_collection.create_index("contact", unique=True)
-
 print("Connected to MongoDB ✅")
+
+# ❌ IMPORTANT: No unique index creation
+# We are allowing duplicate mobile numbers
 
 
 # ==========================
@@ -138,7 +138,7 @@ try:
                     headers={
                         "User-Agent": "BloodBuddyBulkImport/1.0"
                     },
-                    timeout=8  # Prevent freezing
+                    timeout=8
                 )
 
                 if response.status_code != 200:
@@ -154,7 +154,7 @@ try:
                     longitude = float(data[0]["lon"])
                     city = address
 
-                time.sleep(1)  # Avoid rate limit
+                time.sleep(1)
 
             except Exception:
                 latitude, longitude = random_amravati_coordinates()
@@ -169,16 +169,10 @@ try:
             "longitude": longitude
         }
 
-        # ==========================
-        # UPSERT (Mobile Unique)
-        # ==========================
-        donor_collection.update_one(
-            {"contact": mobile},     # unique field
-            {"$set": donor_document},
-            upsert=True
-        )
+        
+        donor_collection.insert_one(donor_document)
 
-        print(f"✔ Saved: {name} → {blood_group}")
+        print(f"✔ Inserted: {name} → {blood_group}")
 
 except KeyboardInterrupt:
     print("\nImport Stopped Manually 🚫")
