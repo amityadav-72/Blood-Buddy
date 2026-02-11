@@ -20,15 +20,10 @@ donor_collection = db["donors"]
 
 print("Connected to MongoDB ✅")
 
-# ❌ IMPORTANT: No unique index creation
-# We are allowing duplicate mobile numbers
-
-
 # ==========================
 # Valid Blood Groups
 # ==========================
 VALID_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]
-
 
 # ==========================
 # Amravati Random Coordinates
@@ -51,7 +46,7 @@ def random_amravati_coordinates():
 # ==========================
 def normalize_blood_group(bg):
 
-    if not bg or str(bg).strip().lower() in ["i don't know", "-", "_", ".", "na"]:
+    if not bg or str(bg).strip().lower() in ["i don't know", "-", "_", ".", "na", "nan"]:
         return random.choice(VALID_GROUPS)
 
     bg = str(bg).strip().upper()
@@ -91,10 +86,11 @@ def normalize_blood_group(bg):
 
 
 # ==========================
-# Load Excel
+# Load Excel (Force Mobile as String)
 # ==========================
 file_path = "students.xlsx"
-df = pd.read_excel(file_path)
+
+df = pd.read_excel(file_path, dtype={"Mobile Number": str})
 
 print(f"Total rows found: {len(df)}")
 print("Starting Import...\n")
@@ -103,14 +99,27 @@ print("Starting Import...\n")
 try:
     for index, row in df.iterrows():
 
-        name = row.get("Student Full Name")
+        name = str(row.get("Student Full Name", "")).strip()
         address = row.get("Permanent Address")
-        mobile = str(row.get("Mobile Number")).strip()
+        mobile = str(row.get("Mobile Number", "")).strip()
         blood_group_raw = row.get("Blood Group")
 
-        # Skip if mobile missing
+        # ==========================
+        # Validate Mobile Number
+        # ==========================
         if not mobile or mobile.lower() == "nan":
             print(f"Skipping {name} (No mobile number)")
+            continue
+
+        # Remove .0 if present
+        if mobile.endswith(".0"):
+            mobile = mobile[:-2]
+
+        # Keep only digits
+        mobile = "".join(filter(str.isdigit, mobile))
+
+        if len(mobile) != 10:
+            print(f"Skipping {name} (Invalid mobile)")
             continue
 
         print(f"Processing ({index+1}/{len(df)}): {name}")
@@ -118,7 +127,7 @@ try:
         blood_group = normalize_blood_group(blood_group_raw)
 
         # ==========================
-        # Handle Address
+        # Handle Address / Geocoding
         # ==========================
         if pd.isna(address) or not str(address).strip():
 
@@ -154,12 +163,15 @@ try:
                     longitude = float(data[0]["lon"])
                     city = address
 
-                time.sleep(1)
+                time.sleep(1)  # Respect API rate limit
 
             except Exception:
                 latitude, longitude = random_amravati_coordinates()
                 city = "Amravati"
 
+        # ==========================
+        # Insert into MongoDB
+        # ==========================
         donor_document = {
             "name": name,
             "blood_group": blood_group,
@@ -169,7 +181,6 @@ try:
             "longitude": longitude
         }
 
-        
         donor_collection.insert_one(donor_document)
 
         print(f"✔ Inserted: {name} → {blood_group}")
