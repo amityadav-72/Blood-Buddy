@@ -84,45 +84,103 @@ const BecomeDonor = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    try {
-      const response = await fetch('http://localhost:3000', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          age: Number(formData.age),
-          weight: Number(formData.weight)
-        }),
-      });
+  try {
+    let latitude;
+    let longitude;
 
-      const data = await response.json();
+    // ==========================
+    // OPTION 1: GPS Location Used
+    // ==========================
+    if (locationStatus === "success") {
+      const position = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject)
+      );
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+      latitude = position.coords.latitude;
+      longitude = position.coords.longitude;
+    }
+
+    // ==========================
+    // OPTION 2: Manual Address
+    // ==========================
+    else {
+      if (!formData.address.trim()) {
+        throw new Error("Please enter your address.");
       }
 
-      alert('Registration successful! Thank you for becoming a life-saver!');
-      setFormData({
-        name: '',
-        age: '',
-        weight: '',
-        bloodGroup: '',
-        mobile: '',
-        whatsapp: '',
-        address: ''
-      });
-      
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'An error occurred. Please try again.');
+      const geoResponse = await axios.get(
+        "https://nominatim.openstreetmap.org/search",
+        {
+          params: {
+            format: "json",
+            q: formData.address,
+          },
+          headers: {
+            "User-Agent": "BloodBuddyApp/1.0",
+          },
+        }
+      );
+
+      if (!geoResponse.data.length) {
+        throw new Error("Address not found. Please enter valid address.");
+      }
+
+      latitude = parseFloat(geoResponse.data[0].lat);
+      longitude = parseFloat(geoResponse.data[0].lon);
     }
-  };
+
+    // ==========================
+    // SEND DATA TO BACKEND
+    // ==========================
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}/donors/add`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          blood_group: formData.bloodGroup,
+          city: formData.address,
+          contact: formData.mobile,
+          latitude,
+          longitude,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Registration failed");
+    }
+
+    alert("Registration successful! 🎉");
+
+    setFormData({
+      name: "",
+      age: "",
+      weight: "",
+      bloodGroup: "",
+      mobile: "",
+      whatsapp: "",
+      address: "",
+    });
+
+    setLocationStatus("idle");
+
+  } catch (err) {
+    console.error(err);
+    setError(err.message || "Something went wrong");
+  }
+};
+
+
 
   const enableLocation = () => {
     fetchLocation();

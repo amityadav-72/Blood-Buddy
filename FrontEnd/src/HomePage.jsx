@@ -6,7 +6,6 @@ import HowItWorks from "./HowItWorks";
 import Testimonials from "./Testimonials";
 import Footer from "./Footer";
 import CallToAction from "./CallToAction";
-import DonorFilterSection from "./DonorFilterSection"; // ✅ Make sure this is imported
 
 function HomePage() {
   return (
@@ -14,15 +13,7 @@ function HomePage() {
       {/* 🧭 Navbar */}
       <Navbar />
 
-      {/* 🩸 Donor Finder Section - right below navbar */}
-      <div
-        style={{
-          paddingTop: "100px", // ✅ pushes it below navbar
-          backgroundColor: "#f8f9fa",
-        }}
-      >
-        <DonorFilterSection />
-      </div>
+    
 
       {/* ✅ Rest of your homepage sections */}
       <Hero />

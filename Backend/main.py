@@ -4,16 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Blood Buddy API", version="1.0")
 
-# Allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or ["http://localhost:5173"] for Vite
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routes
 app.include_router(donor_router)
 
 @app.get("/")

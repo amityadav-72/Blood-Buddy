@@ -63,14 +63,25 @@ const RoutingMachine = ({ userLocation, donor }) => {
       draggableWaypoints: false,
       show: false,
       fitSelectedRoutes: true,
-    }).addTo(map);
+    });
 
-    // Cleanup route when donor changes
-    return () => map.removeControl(routingControl);
+    routingControl.addTo(map);
+
+    // ✅ SAFE CLEANUP
+    return () => {
+      try {
+        if (map && routingControl) {
+          map.removeControl(routingControl);
+        }
+      } catch (err) {
+        console.warn("Routing cleanup error:", err);
+      }
+    };
   }, [userLocation, donor, map]);
 
   return null;
 };
+
 
 // ======================================
 // 🗺 MAIN MAP VIEW COMPONENT

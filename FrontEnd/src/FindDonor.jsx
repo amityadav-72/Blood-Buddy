@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';  
 import Footer from './Footer';
+import DonorFilterSection from "./DonorFilterSection";
+
 
 const FindDonor = () => {
   const [formData, setFormData] = useState({
@@ -133,7 +135,13 @@ const handleSubmit = async (e) => {
 
   return (<>
     <Navbar />  
-    <div className="max-w-4xl mx-auto p-6 pt-24">
+    <div className="max-w-6xl mx-auto p-6 pt-24">
+
+  {/* MAP SECTION */}
+  <div className="mb-12">
+    <DonorFilterSection />
+  </div>
+
     
       <div className="bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-500 rounded-lg p-6 mb-8 shadow-sm">
         <h1 className="text-3xl font-bold text-red-700 mb-4 text-center">
