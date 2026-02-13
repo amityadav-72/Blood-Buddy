@@ -11,7 +11,6 @@ from pymongo import MongoClient
 # MongoDB Connection
 # ==========================
 load_dotenv()
-
 MONGO_URI = os.getenv("MONGO_URI")
 
 client = MongoClient(MONGO_URI)
@@ -46,8 +45,8 @@ def random_amravati_coordinates():
 # ==========================
 def normalize_blood_group(bg):
 
-    if not bg or str(bg).strip().lower() in ["i don't know", "-", "_", ".", "na", "nan"]:
-        return random.choice(VALID_GROUPS)
+    if not bg or str(bg).strip().lower() in ["nan", "na", "-", "_", ".", "i don't know"]:
+        return None   # ❗ DO NOT assign random group
 
     bg = str(bg).strip().upper()
 
@@ -82,49 +81,70 @@ def normalize_blood_group(bg):
     if bg.startswith("O"):
         return "O+" if "+" in bg else "O-"
 
-    return random.choice(VALID_GROUPS)
+    return None
 
 
 # ==========================
-# Load Excel (Force Mobile as String)
+# Load Excel
 # ==========================
 file_path = "students.xlsx"
 
-df = pd.read_excel(file_path, dtype={"Mobile Number": str})
+df = pd.read_excel(
+    file_path,
+    dtype={
+        "Mobile Number": str,
+        "Blood Group": str
+    }
+)
 
+# Clean column names
+df.columns = df.columns.str.strip()
+
+print("Columns found:", df.columns.tolist())
 print(f"Total rows found: {len(df)}")
 print("Starting Import...\n")
 
+# ==========================
+# Counters
+# ==========================
+inserted = 0
+skipped_mobile = 0
+skipped_blood_group = 0
 
+# ==========================
+# Import Loop
+# ==========================
 try:
     for index, row in df.iterrows():
 
         name = str(row.get("Student Full Name", "")).strip()
         address = row.get("Permanent Address")
         mobile = str(row.get("Mobile Number", "")).strip()
-        blood_group_raw = row.get("Blood Group")
+        blood_group_raw = str(row.get("Blood Group", "")).strip()
+
+        print(f"\nProcessing ({index+1}/{len(df)}): {name}")
+        print("RAW BG →", blood_group_raw)
 
         # ==========================
-        # Validate Mobile Number
+        # Validate Mobile
         # ==========================
-        if not mobile or mobile.lower() == "nan":
-            print(f"Skipping {name} (No mobile number)")
-            continue
-
-        # Remove .0 if present
-        if mobile.endswith(".0"):
-            mobile = mobile[:-2]
-
-        # Keep only digits
+        mobile = mobile.replace(".0", "")
         mobile = "".join(filter(str.isdigit, mobile))
 
         if len(mobile) != 10:
-            print(f"Skipping {name} (Invalid mobile)")
+            print("❌ Skipped (Invalid mobile)")
+            skipped_mobile += 1
             continue
 
-        print(f"Processing ({index+1}/{len(df)}): {name}")
-
+        # ==========================
+        # Normalize Blood Group
+        # ==========================
         blood_group = normalize_blood_group(blood_group_raw)
+
+        if not blood_group:
+            print("❌ Skipped (Invalid blood group)")
+            skipped_blood_group += 1
+            continue
 
         # ==========================
         # Handle Address / Geocoding
@@ -144,14 +164,9 @@ try:
                         "format": "json",
                         "q": f"{address}, Maharashtra, India"
                     },
-                    headers={
-                        "User-Agent": "BloodBuddyBulkImport/1.0"
-                    },
+                    headers={"User-Agent": "BloodBuddyBulkImport/1.0"},
                     timeout=8
                 )
-
-                if response.status_code != 200:
-                    raise Exception("Geocoding failed")
 
                 data = response.json()
 
@@ -163,9 +178,9 @@ try:
                     longitude = float(data[0]["lon"])
                     city = address
 
-                time.sleep(1)  # Respect API rate limit
+                time.sleep(1)
 
-            except Exception:
+            except:
                 latitude, longitude = random_amravati_coordinates()
                 city = "Amravati"
 
@@ -183,9 +198,16 @@ try:
 
         donor_collection.insert_one(donor_document)
 
+        inserted += 1
         print(f"✔ Inserted: {name} → {blood_group}")
 
 except KeyboardInterrupt:
-    print("\nImport Stopped Manually 🚫")
+    print("\nImport stopped manually 🚫")
 
-print("\nBulk Import Completed Successfully ✅")
+# ==========================
+# Final Report
+# ==========================
+print("\n✅ Bulk Import Completed")
+print("Inserted:", inserted)
+print("Skipped (Mobile):", skipped_mobile)
+print("Skipped (Blood Group):", skipped_blood_group)
