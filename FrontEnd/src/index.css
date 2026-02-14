@@ -1,69 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================= BASE ================= */
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 
-/* 📍 USER LOCATION PULSE */
-.custom-user-marker .pulse {
+/* ================= USER LIVE LOCATION DOT ================= */
+
+.pulse-dot {
   width: 18px;
   height: 18px;
-  background: #007bff;
+  background: #2563eb;
   border-radius: 50%;
   position: relative;
 }
 
-.custom-user-marker .pulse::after {
+.pulse-dot::after {
   content: "";
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 40px;
+  height: 40px;
+  top: -11px;
+  left: -11px;
+  background: rgba(37, 99, 235, 0.35);
   border-radius: 50%;
-  background: rgba(0, 123, 255, 0.4);
-  animation: pulse 2s infinite;
-  top: 0;
-  left: 0;
+  animation: userPulse 1.5s infinite;
 }
 
-@keyframes pulse {
+@keyframes userPulse {
   0% {
-    transform: scale(1);
+    transform: scale(0.5);
     opacity: 1;
   }
-  70% {
-    transform: scale(3);
-    opacity: 0;
-  }
   100% {
-    transform: scale(1);
+    transform: scale(1.4);
     opacity: 0;
   }
 }
 
-/* 🩸 BLOOD GROUP MARKER */
-.blood-marker .marker {
-  background: #d90429;
-  color: #fff;
+
+/* ================= BLOOD GROUP MARKER ================= */
+
+.blood-marker {
+  background: white;
+  color: #d90429;
   font-weight: bold;
   font-size: 12px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 2px solid #d90429;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: 0.3s;
+}
+
+.blood-marker.selected {
+  background: #d90429;
+  color: white;
+  transform: scale(1.15);
+}
+
+
+/* ================= ACCURACY CIRCLE SMOOTH ================= */
+
+.leaflet-interactive {
+  transition: all 0.3s ease;
+}
+
+.leaflet-routing-container {
+  display: none !important;
 }

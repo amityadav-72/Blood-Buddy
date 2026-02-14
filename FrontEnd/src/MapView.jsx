@@ -1,140 +1,293 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
   useMap,
+  CircleMarker,
 } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
-import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import "leaflet/dist/leaflet.css";
 
-// 📍 USER LOCATION ICON (Pulsing dot style)
-const userIcon = L.divIcon({
-  className: "custom-user-marker",
-  html: `<div class="pulse"></div>`,
-  iconSize: [20, 20],
-});
+//////////////////////////////////////////////////////
+// 🗣 SPEAK
+//////////////////////////////////////////////////////
+const speak = (text) => {
+  if (!text) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-IN";
+  window.speechSynthesis.speak(utter);
+};
 
-// 🩸 BLOOD GROUP ICON
-const getBloodIcon = (group) =>
+//////////////////////////////////////////////////////
+// 🧭 TURN ARROW
+//////////////////////////////////////////////////////
+const getDirectionArrow = (text = "") => {
+  text = text.toLowerCase();
+
+  if (text.includes("left")) return "⬅️";
+  if (text.includes("right")) return "➡️";
+  if (text.includes("u-turn")) return "🔄";
+  if (text.includes("head")) return "⬆️";
+
+  return "⬆️";
+};
+
+//////////////////////////////////////////////////////
+// 📍 USER MARKER
+//////////////////////////////////////////////////////
+function SmoothUserMarker({ userLocation }) {
+  const markerRef = useRef();
+
+  useEffect(() => {
+    if (markerRef.current && userLocation) {
+      markerRef.current.setLatLng([userLocation.lat, userLocation.lon]);
+    }
+  }, [userLocation]);
+
+  if (!userLocation) return null;
+
+  return (
+    <>
+      <CircleMarker
+        center={[userLocation.lat, userLocation.lon]}
+        radius={40}
+        pathOptions={{
+          color: "#2563eb",
+          fillColor: "#3b82f6",
+          fillOpacity: 0.15,
+        }}
+      />
+
+      <Marker
+        position={[userLocation.lat, userLocation.lon]}
+        ref={markerRef}
+        icon={L.divIcon({
+          html: `<div class="pulse-dot"></div>`,
+          className: "",
+          iconSize: [20, 20],
+        })}
+      >
+        <Popup>You are here</Popup>
+      </Marker>
+    </>
+  );
+}
+
+//////////////////////////////////////////////////////
+// 🩸 BLOOD ICON
+//////////////////////////////////////////////////////
+const getBloodIcon = (group, selected) =>
   L.divIcon({
-    className: "blood-marker",
-    html: `<div class="marker">${group}</div>`,
+    html: `<div class="blood-marker ${selected ? "selected" : ""}">${group}</div>`,
+    className: "",
     iconSize: [40, 40],
   });
 
+//////////////////////////////////////////////////////
 // 🔄 RECENTER
+//////////////////////////////////////////////////////
 function RecenterMap({ center }) {
   const map = useMap();
+
   useEffect(() => {
-    map.setView(center, 13, { animate: true });
-  }, [center]);
+    if (center) map.setView(center, 15, { animate: true });
+  }, [center, map]);
+
   return null;
 }
 
+//////////////////////////////////////////////////////
 // 🚗 ROUTING
-const RoutingMachine = ({ userLocation, donor }) => {
+//////////////////////////////////////////////////////
+function RoutingMachine({ userLocation, donor, setRouteInfo, setSteps }) {
   const map = useMap();
+  const routingRef = useRef(null);
 
   useEffect(() => {
-    if (!userLocation || !donor) return;
+    if (!map || !userLocation || !donor) return;
 
-    const routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(userLocation.lat, userLocation.lon),
-        L.latLng(donor.latitude, donor.longitude),
-      ],
+    if (!routingRef.current) {
+      routingRef.current = L.Routing.control({
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: true,
+        show: false,
+        createMarker: () => null,
+      })
+        .on("routesfound", (e) => {
+          const route = e.routes[0];
 
-      lineOptions: {
-        styles: [
-          { color: "#000", weight: 7, opacity: 0.2 },
-          { color: "#d90429", weight: 5, opacity: 1 },
-        ],
-      },
+          setRouteInfo({
+            distance: (route.summary.totalDistance / 1000).toFixed(2),
+            time: Math.round(route.summary.totalTime / 60),
+          });
 
-      createMarker: () => null, // ❌ remove default markers
-      addWaypoints: false,
-      draggableWaypoints: false,
-      fitSelectedRoutes: true,
-      show: false,
-    }).addTo(map);
+          setSteps(route.instructions);
+        })
+        .addTo(map);
+    }
 
-    // ✅ SHOW DISTANCE + TIME
-    routingControl.on("routesfound", function (e) {
-      const route = e.routes[0];
-      const distance = (route.summary.totalDistance / 1000).toFixed(2);
-      const time = Math.round(route.summary.totalTime / 60);
-
-      const center = route.coordinates[
-        Math.floor(route.coordinates.length / 2)
-      ];
-
-      L.popup({ closeButton: false })
-        .setLatLng(center)
-        .setContent(`
-  <div style="
-    background:white;
-    padding:6px 12px;
-    border-radius:8px;
-    font-weight:600;
-    color:#d90429;
-  ">
-    🚗 ${distance} km • ⏱ ${time} mins
-  </div>
-`)
-
-        .openOn(map);
-    });
-
-    return () => map.removeControl(routingControl);
+    routingRef.current.setWaypoints([
+      L.latLng(userLocation.lat, userLocation.lon),
+      L.latLng(donor.latitude, donor.longitude),
+    ]);
   }, [userLocation, donor, map]);
 
   return null;
-};
+}
 
+//////////////////////////////////////////////////////
+// 🗺 MAIN
+//////////////////////////////////////////////////////
+export default function MapView({
+  donors = [],
+  center,
+  userLocation,
+  selectedDonor,
+}) {
+  const [routeInfo, setRouteInfo] = useState(null);
+  const [steps, setSteps] = useState([]);
+  const [currentStep, setCurrentStep] = useState(null);
+  const [navMode, setNavMode] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
 
+  //////////////////////////////////////////////////////
+  // STEP CHANGE
+  //////////////////////////////////////////////////////
+  useEffect(() => {
+    if (steps.length > 0) {
+      setCurrentStep(steps[0]);
 
-const MapView = ({ donors = [], center, userLocation, selectedDonor }) => {
+      if (voiceEnabled && navMode) {
+        speak(steps[0].text);
+      }
+    }
+  }, [steps, voiceEnabled, navMode]);
+
+  //////////////////////////////////////////////////////
+  // COMPASS
+  //////////////////////////////////////////////////////
+  useEffect(() => {
+    const handleOrientation = (e) => {
+      if (!navMode) return;
+
+      const heading = e.alpha;
+      const mapPane = document.querySelector(".leaflet-map-pane");
+
+      if (mapPane) {
+        mapPane.style.transform = `rotate(${-heading}deg)`;
+      }
+    };
+
+    window.addEventListener("deviceorientation", handleOrientation);
+    return () =>
+      window.removeEventListener("deviceorientation", handleOrientation);
+  }, [navMode]);
+
   if (!center) return <p>Loading map...</p>;
 
   return (
-    <MapContainer center={center} zoom={13} style={{ height: "500px" }}>
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <div className="relative">
 
-      {/* USER */}
-      {userLocation && (
-        <Marker position={[userLocation.lat, userLocation.lon]} icon={userIcon}>
-          <Popup>You are here</Popup>
-        </Marker>
-      )}
-
-      {/* DONORS */}
-      {donors.map((d, i) => (
-        <Marker
-          key={i}
-          position={[d.latitude, d.longitude]}
-          icon={getBloodIcon(d.blood_group)}
+      {/* NAV + VOICE BUTTONS */}
+      <div className="absolute top-4 right-4 flex gap-2 z-[1200]">
+        <button
+          onClick={() => setNavMode(!navMode)}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg shadow"
         >
-          <Popup>
-            <div className="text-center">
-              <h3 className="font-bold text-red-600">{d.name}</h3>
-              <p>🩸 {d.blood_group}</p>
-              <p>{d.contact}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+          {navMode ? "Exit Nav" : "Start Nav"}
+        </button>
 
-      <RecenterMap center={center} />
+        <button
+          onClick={() => setVoiceEnabled(!voiceEnabled)}
+          className={`px-4 py-2 rounded-lg shadow ${
+            voiceEnabled ? "bg-green-600 text-white" : "bg-white"
+          }`}
+        >
+          🔊
+        </button>
+      </div>
 
-      {userLocation && selectedDonor && (
-        <RoutingMachine userLocation={userLocation} donor={selectedDonor} />
+      <MapContainer
+        center={center}
+        zoom={13}
+        preferCanvas
+        style={{
+          height: navMode ? "100vh" : "500px",
+          width: "100%",
+        }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        <SmoothUserMarker userLocation={userLocation} />
+
+        {donors.map((d, i) => (
+          <Marker
+            key={i}
+            position={[d.latitude, d.longitude]}
+            icon={getBloodIcon(
+              d.blood_group,
+              selectedDonor?.contact === d.contact
+            )}
+          />
+        ))}
+
+        <RecenterMap center={center} />
+
+        {userLocation && selectedDonor && (
+          <RoutingMachine
+            userLocation={userLocation}
+            donor={selectedDonor}
+            setRouteInfo={setRouteInfo}
+            setSteps={setSteps}
+          />
+        )}
+      </MapContainer>
+
+      {/* 🧭 TOP INSTRUCTION */}
+      {navMode && currentStep && (
+        <div className="absolute top-0 left-0 w-full flex justify-center z-[1100]">
+          <div className="mt-2 w-[95%] max-w-2xl bg-red-600 text-white rounded-xl shadow-lg px-4 py-3 flex items-center justify-center gap-3">
+
+            <span className="text-2xl">
+              {getDirectionArrow(currentStep.text)}
+            </span>
+
+            <span className="font-semibold text-sm md:text-base">
+              {currentStep.text}
+            </span>
+
+          </div>
+        </div>
       )}
-    </MapContainer>
-  );
-};
 
-export default MapView;
+      {/* 📍 BOTTOM CARD */}
+      {selectedDonor && routeInfo && (
+        <div className="absolute bottom-0 left-0 w-full bg-white shadow-2xl p-4 rounded-t-2xl flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-red-600 text-lg">
+              {selectedDonor.name}
+            </h3>
+            <p className="text-sm text-gray-600">
+              🩸 {selectedDonor.blood_group}
+            </p>
+            <p className="text-sm text-gray-600">
+              🚗 {routeInfo.distance} km • ⏱ {routeInfo.time} min
+            </p>
+          </div>
+
+          <a
+            href={`tel:${selectedDonor.contact}`}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold"
+          >
+            Call
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}

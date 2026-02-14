@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import MapView from "./MapView";
 import axios from "axios";
 
 function DonorFilterSection() {
+
   const [locationOption, setLocationOption] = useState("auto");
   const [manualLocation, setManualLocation] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
@@ -13,7 +14,84 @@ function DonorFilterSection() {
   const [mapCenter, setMapCenter] = useState([20.9374, 77.7796]);
   const [userLocation, setUserLocation] = useState(null);
   const [selectedDonor, setSelectedDonor] = useState(null);
+  const lastFetchLocation = useRef(null);
+  const lastFetchLocationRef = useRef(null);
+  
 
+const getDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+  // ✅ LIVE LOCATION TRACKING (moves marker in real time)
+  useEffect(() => {
+  if (locationOption !== "auto") return;
+
+  const watchId = navigator.geolocation.watchPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      setUserLocation({ lat, lon });
+      setMapCenter([lat, lon]);
+
+      // 🚀 AUTO FETCH EVERY 500m
+      if (lastFetchLocation.current && bloodGroup) {
+        const distance = getDistance(
+          lastFetchLocation.current.lat,
+          lastFetchLocation.current.lon,
+          lat,
+          lon
+        );
+
+        if (distance >= 0.5) {
+          try {
+            const donorRes = await axios.get(
+              `${process.env.REACT_APP_API_URL}/donors/nearby`,
+              {
+                params: {
+                  lat,
+                  lon,
+                  blood_group: bloodGroup,
+                  limit,
+                },
+              }
+            );
+
+            setDonors(donorRes.data.donors || donorRes.data);
+            lastFetchLocation.current = { lat, lon };
+
+            console.log("✅ Auto refreshed after 500m");
+          } catch (err) {
+            console.log("Auto fetch error", err);
+          }
+        }
+      }
+    },
+    (err) => console.log(err),
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000,
+    }
+  );
+
+  return () => navigator.geolocation.clearWatch(watchId);
+},  [locationOption, bloodGroup, limit]);
+
+
+
+  // ✅ FETCH DONORS BUTTON
   const handleFetch = async () => {
     if (locationOption === "manual" && !manualLocation.trim()) {
       alert("Please enter a location!");
@@ -54,6 +132,12 @@ function DonorFilterSection() {
       );
 
       setDonors(donorRes.data.donors || donorRes.data);
+      lastFetchLocation.current = {
+  lat: parseFloat(lat),
+  lon: parseFloat(lon),
+};
+
+
     } catch (err) {
       console.error(err);
       alert("Error fetching donors");
@@ -61,6 +145,7 @@ function DonorFilterSection() {
       setLoading(false);
     }
   };
+
 
   return (
     <section className="bg-gray-50 py-10">

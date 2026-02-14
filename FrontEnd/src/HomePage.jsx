@@ -19,7 +19,6 @@ function HomePage() {
       <Hero />
       <FeaturesSection />
       <HowItWorks />
-      <CallToAction />
       <Testimonials />
       <Footer />
     </>

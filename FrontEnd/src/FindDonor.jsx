@@ -8,95 +8,110 @@ const FindDonor = () => {
     <>
       <Navbar />
 
-      <div className="max-w-6xl mx-auto p-6 pt-24">
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-16">
 
-        {/* ===== Donor Search Section ===== */}
-        <div className="mb-12">
+        {/* 🩸 SEARCH SECTION */}
+        <div className="mb-16">
           <DonorFilterSection />
         </div>
 
-        {/* ===== Information Section ===== */}
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-500 rounded-lg p-6 mb-8 shadow-sm">
-          <h1 className="text-3xl font-bold text-red-700 mb-4 text-center">
-            Find Blood Donors in Your Area
-          </h1>
+        {/* ℹ️ INFO SECTION */}
+        <section className="relative bg-white/80 backdrop-blur-md border border-red-100 rounded-2xl p-8 mb-12 shadow-sm">
 
-          <p className="text-gray-700 text-lg leading-relaxed text-justify">
-            Blood Buddy helps you quickly find verified blood donors near your
-            location. Our intelligent matching system connects recipients with
-            compatible donors using location-based search technology.
-            Simply filter by blood group and location to find nearby donors
-            instantly.
-          </p>
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Find Blood Donors Near You
+            </h1>
 
-          <div className="mt-6 flex flex-wrap gap-2 justify-center">
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-              Quick Matching
-            </span>
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-              Verified Donors
-            </span>
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-              Location-Based
-            </span>
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-              24/7 Available
-            </span>
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-              Secure & Private
-            </span>
+            <p className="text-gray-600 text-lg leading-relaxed">
+              BloodBuddy helps you instantly connect with verified donors
+              using real-time location matching. Filter by blood group and
+              distance to get immediate help during emergencies.
+            </p>
           </div>
 
-          
-        </div>
-{/* Gov't blood-bank quick link (eRaktkosh) */}
-<div className="bg-white border-l-4 border-red-500 rounded-lg p-6 mb-8 shadow-sm hover:shadow-md transition">
-  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* FEATURE TAGS */}
+          <div className="mt-8 flex flex-wrap gap-3 justify-center">
+            {[
+              "Quick Matching",
+              "Verified Donors",
+              "Location-Based",
+              "24/7 Available",
+              "Secure & Private",
+            ].map((tag, i) => (
+              <span
+                key={i}
+                className="px-4 py-1.5 bg-red-50 text-red-600 text-sm font-medium rounded-full border border-red-100"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </section>
 
-    {/* Left content */}
-    <div className="flex items-start gap-4">
-      <div className="bg-red-50 text-red-600 rounded-full p-3">
-        <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10 2C6 6 4 8.5 4 11.5A6 6 0 0010 17a6 6 0 006-5.5C16 8.5 14 6 10 2z"/>
-        </svg>
-      </div>
+        {/* 🏥 ERAKTKOSH CARD */}
+        <section className="group bg-gradient-to-r from-white to-red-50 border border-red-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition">
 
-      <div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <h3 className="text-xl font-bold text-red-700">
-            Search Government Blood Banks
-          </h3>
-          <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded">
-            eRaktkosh • Official
-          </span>
-        </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
-        <p className="mt-2 text-gray-600">
-          Check real-time blood availability from registered government blood
-          banks across India using the official eRaktkosh portal.
-        </p>
-      </div>
-    </div>
+            {/* LEFT */}
+            <div className="flex items-start gap-4">
 
-    {/* Right button */}
-    <div>
-      <a
-        href="https://eraktkosh.mohfw.gov.in/eraktkoshPortal/#/publicPages/bloodAvailabilitySearch"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-5 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-      >
-        Open eRaktkosh
-        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4M21 12H3"/>
-        </svg>
-      </a>
-    </div>
+              <div className="bg-red-100 text-red-600 rounded-xl p-3 shadow-sm">
+                <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 2C6 6 4 8.5 4 11.5A6 6 0 0010 17a6 6 0 006-5.5C16 8.5 14 6 10 2z"/>
+                </svg>
+              </div>
 
-  </div>
-</div>
+              <div>
+                <div className="flex items-center flex-wrap gap-3">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Government Blood Bank Availability
+                  </h3>
 
-      </div>
+                  <span className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-md font-medium">
+                    eRaktkosh • Official
+                  </span>
+                </div>
+
+                <p className="mt-2 text-gray-600 max-w-xl">
+                  Access real-time blood stock from registered government blood
+                  banks across India through the official eRaktkosh system.
+                </p>
+              </div>
+
+            </div>
+
+            {/* RIGHT BUTTON */}
+            <div className="md:text-right">
+              <a
+                href="https://eraktkosh.mohfw.gov.in/eraktkoshPortal/#/publicPages/bloodAvailabilitySearch"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition shadow-sm group-hover:scale-[1.02]"
+              >
+                Open eRaktkosh
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17 8l4 4m0 0l-4 4M21 12H3"
+                  />
+                </svg>
+              </a>
+            </div>
+
+          </div>
+
+        </section>
+
+      </main>
 
       <Footer />
     </>
