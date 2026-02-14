@@ -15,7 +15,6 @@ function DonorFilterSection() {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedDonor, setSelectedDonor] = useState(null);
   const lastFetchLocation = useRef(null);
-  const lastFetchLocationRef = useRef(null);
   
 
 const getDistance = (lat1, lon1, lat2, lon2) => {

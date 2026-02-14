@@ -135,7 +135,8 @@ function RoutingMachine({ userLocation, donor, setRouteInfo, setSteps }) {
       L.latLng(userLocation.lat, userLocation.lon),
       L.latLng(donor.latitude, donor.longitude),
     ]);
-  }, [userLocation, donor, map]);
+  }, [userLocation, donor, map, setRouteInfo, setSteps]);
+
 
   return null;
 }
