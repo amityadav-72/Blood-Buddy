@@ -1,18 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import DonorFilterSection from "./DonorFilterSection";
 
 const FindDonor = () => {
+  const [navMode, setNavMode] = useState(false);
+
   return (
     <>
-      <Navbar />
+      {/* NAVBAR */}
+      <Navbar navMode={navMode} />
 
       <main className="max-w-7xl mx-auto px-6 pt-28 pb-16">
 
-        {/* 🩸 SEARCH SECTION */}
+        {/* 🩸 SEARCH + MAP SECTION */}
         <div className="mb-16">
-          <DonorFilterSection />
+          <DonorFilterSection
+            navMode={navMode}
+            setNavMode={setNavMode}
+          />
         </div>
 
         {/* ℹ️ INFO SECTION */}
@@ -30,7 +36,6 @@ const FindDonor = () => {
             </p>
           </div>
 
-          {/* FEATURE TAGS */}
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             {[
               "Quick Matching",
@@ -54,9 +59,7 @@ const FindDonor = () => {
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
-            {/* LEFT */}
             <div className="flex items-start gap-4">
-
               <div className="bg-red-100 text-red-600 rounded-xl p-3 shadow-sm">
                 <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M10 2C6 6 4 8.5 4 11.5A6 6 0 0010 17a6 6 0 006-5.5C16 8.5 14 6 10 2z"/>
@@ -79,10 +82,8 @@ const FindDonor = () => {
                   banks across India through the official eRaktkosh system.
                 </p>
               </div>
-
             </div>
 
-            {/* RIGHT BUTTON */}
             <div className="md:text-right">
               <a
                 href="https://eraktkosh.mohfw.gov.in/eraktkoshPortal/#/publicPages/bloodAvailabilitySearch"
@@ -108,11 +109,11 @@ const FindDonor = () => {
             </div>
 
           </div>
-
         </section>
 
       </main>
 
+      {/* FOOTER */}
       <Footer />
     </>
   );

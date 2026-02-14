@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import MapView from "./MapView";
 import axios from "axios";
 
-function DonorFilterSection() {
+function DonorFilterSection({ navMode, setNavMode }) {
 
   const [locationOption, setLocationOption] = useState("auto");
   const [manualLocation, setManualLocation] = useState("");
@@ -149,6 +149,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
   return (
     <section className="bg-gray-50 py-10">
 
+
       <div className="max-w-6xl mx-auto px-4">
 
         {/* TITLE */}
@@ -228,11 +229,13 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
         {/* MAP */}
         <div className="mt-10 rounded-xl overflow-hidden shadow-md">
           <MapView
-            donors={donors}
-            center={mapCenter}
-            userLocation={userLocation}
-            selectedDonor={selectedDonor}
-          />
+  navMode={navMode}
+  setNavMode={setNavMode}
+  donors={donors}
+  center={mapCenter}
+  userLocation={userLocation}
+  selectedDonor={selectedDonor}
+/>
         </div>
 
         {/* DONOR LIST */}

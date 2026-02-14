@@ -86,3 +86,22 @@ code {
 .leaflet-routing-container {
   display: none !important;
 }
+
+.nav-user {
+  font-size: 26px;
+  color: #2563eb;
+  transition: transform 0.2s linear;
+}
+
+.pulse-dot {
+  width: 12px;
+  height: 12px;
+  background: #2563eb;
+  border-radius: 50%;
+}
+
+.nav-user {
+  font-size: 26px;
+  color: #2563eb;
+  transition: transform 0.2s linear;
+}

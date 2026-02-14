@@ -27,12 +27,9 @@ const speak = (text) => {
 //////////////////////////////////////////////////////
 const getDirectionArrow = (text = "") => {
   text = text.toLowerCase();
-
   if (text.includes("left")) return "⬅️";
   if (text.includes("right")) return "➡️";
   if (text.includes("u-turn")) return "🔄";
-  if (text.includes("head")) return "⬆️";
-
   return "⬆️";
 };
 
@@ -66,7 +63,7 @@ function SmoothUserMarker({ userLocation }) {
         position={[userLocation.lat, userLocation.lon]}
         ref={markerRef}
         icon={L.divIcon({
-          html: `<div class="pulse-dot"></div>`,
+          html: `<div class="nav-user">▲</div>`,
           className: "",
           iconSize: [20, 20],
         })}
@@ -137,7 +134,6 @@ function RoutingMachine({ userLocation, donor, setRouteInfo, setSteps }) {
     ]);
   }, [userLocation, donor, map, setRouteInfo, setSteps]);
 
-
   return null;
 }
 
@@ -149,11 +145,12 @@ export default function MapView({
   center,
   userLocation,
   selectedDonor,
+  navMode,
+  setNavMode,
 }) {
   const [routeInfo, setRouteInfo] = useState(null);
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(null);
-  const [navMode, setNavMode] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
   //////////////////////////////////////////////////////
@@ -162,26 +159,18 @@ export default function MapView({
   useEffect(() => {
     if (steps.length > 0) {
       setCurrentStep(steps[0]);
-
-      if (voiceEnabled && navMode) {
-        speak(steps[0].text);
-      }
+      if (voiceEnabled && navMode) speak(steps[0].text);
     }
   }, [steps, voiceEnabled, navMode]);
 
   //////////////////////////////////////////////////////
-  // COMPASS
+  // 🧭 ROTATE USER ARROW
   //////////////////////////////////////////////////////
   useEffect(() => {
     const handleOrientation = (e) => {
       if (!navMode) return;
-
-      const heading = e.alpha;
-      const mapPane = document.querySelector(".leaflet-map-pane");
-
-      if (mapPane) {
-        mapPane.style.transform = `rotate(${-heading}deg)`;
-      }
+      const arrow = document.querySelector(".nav-user");
+      if (arrow) arrow.style.transform = `rotate(${e.alpha}deg)`;
     };
 
     window.addEventListener("deviceorientation", handleOrientation);
@@ -194,7 +183,7 @@ export default function MapView({
   return (
     <div className="relative">
 
-      {/* NAV + VOICE BUTTONS */}
+      {/* NAV BUTTONS */}
       <div className="absolute top-4 right-4 flex gap-2 z-[1200]">
         <button
           onClick={() => setNavMode(!navMode)}
@@ -218,7 +207,7 @@ export default function MapView({
         zoom={13}
         preferCanvas
         style={{
-          height: navMode ? "100vh" : "500px",
+          height: navMode ? "100dvh" : "500px",
           width: "100%",
         }}
       >
@@ -249,24 +238,21 @@ export default function MapView({
         )}
       </MapContainer>
 
-      {/* 🧭 TOP INSTRUCTION */}
+      {/* TOP NAV INSTRUCTION */}
       {navMode && currentStep && (
         <div className="absolute top-0 left-0 w-full flex justify-center z-[1100]">
           <div className="mt-2 w-[95%] max-w-2xl bg-red-600 text-white rounded-xl shadow-lg px-4 py-3 flex items-center justify-center gap-3">
-
             <span className="text-2xl">
               {getDirectionArrow(currentStep.text)}
             </span>
-
             <span className="font-semibold text-sm md:text-base">
               {currentStep.text}
             </span>
-
           </div>
         </div>
       )}
 
-      {/* 📍 BOTTOM CARD */}
+      {/* BOTTOM CARD */}
       {selectedDonor && routeInfo && (
         <div className="absolute bottom-0 left-0 w-full bg-white shadow-2xl p-4 rounded-t-2xl flex justify-between items-center">
           <div>
