@@ -17,6 +17,11 @@ const BecomeDonor = () => {
   const [locationStatus, setLocationStatus] = useState('idle');
   const [error, setError] = useState('');
   const [manualAddress, setManualAddress] = useState(false);
+  const [eligibility, setEligibility] = useState({
+  tattoo: "",
+  disease: "",
+});
+
 
  
   const fetchLocation = () => {
@@ -84,9 +89,40 @@ const BecomeDonor = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleEligibilityChange = (e) => {
+  setEligibility({ ...eligibility, [e.target.name]: e.target.value });
+};
+
+
  const handleSubmit = async (e) => {
   e.preventDefault();
   setError("");
+
+  // -----------------------------
+  // Eligibility checks (client-side)
+  // -----------------------------
+  if (eligibility.tattoo === "") {
+    setError("Please confirm whether you had a tattoo/surgery in the last 6 months.");
+    return;
+  }
+  if (eligibility.disease === "") {
+    setError("Please confirm whether you have any blood-related disease.");
+    return;
+  }
+
+  if (eligibility.tattoo === "yes") {
+    setError(
+      "You are temporarily not eligible to donate blood because you had a tattoo/piercing/surgery in the last 6 months. Please wait for the deferral period to pass before donating."
+    );
+    return;
+  }
+
+  if (eligibility.disease === "yes") {
+    setError(
+      "You are not eligible to donate blood due to a blood-related medical condition (such as HIV, Hepatitis, etc.)."
+    );
+    return;
+  }
 
   try {
     let latitude;
@@ -150,6 +186,8 @@ const BecomeDonor = () => {
           contact: formData.mobile,
           latitude,
           longitude,
+          tattoo: eligibility.tattoo,
+          disease: eligibility.disease,
         }),
       }
     );
@@ -173,6 +211,12 @@ const BecomeDonor = () => {
     });
 
     setLocationStatus("idle");
+
+    // reset eligibility after successful registration
+    setEligibility({ tattoo: "", disease: "" });
+
+    setError("");
+
 
   } catch (err) {
     console.error(err);
@@ -474,6 +518,74 @@ const BecomeDonor = () => {
               />
             )}
           </div>
+
+          {/* --- New eligibility filters (side-by-side on md+) --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Have you had a tattoo, piercing or surgery in the last 6 months? *</label>
+              <div className="flex items-center space-x-6">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="tattoo"
+                    value="no"
+                    checked={eligibility.tattoo === 'no'}
+                    onChange={handleEligibilityChange}
+                    required
+                    className="form-radio h-4 w-4 text-red-600"
+                  />
+                  <span className="ml-2">No</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="tattoo"
+                    value="yes"
+                    checked={eligibility.tattoo === 'yes'}
+                    onChange={handleEligibilityChange}
+                    className="form-radio h-4 w-4 text-red-600"
+                  />
+                  <span className="ml-2">Yes</span>
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Donors with recent tattoos/surgeries are temporarily deferred (6 months).</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any blood-related disease (e.g. diabetes, HIV, hepatitis)? *</label>
+              <div className="flex items-center space-x-6">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="disease"
+                    value="no"
+                    checked={eligibility.disease === 'no'}
+                    onChange={handleEligibilityChange}
+                    required
+                    className="form-radio h-4 w-4 text-red-600"
+                  />
+                  <span className="ml-2">No</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="disease"
+                    value="yes"
+                    checked={eligibility.disease === 'yes'}
+                    onChange={handleEligibilityChange}
+                    className="form-radio h-4 w-4 text-red-600"
+                  />
+                  <span className="ml-2">Yes</span>
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Certain medical conditions disqualify donors — this is for donor & recipient safety.</p>
+            </div>
+          </div>
+
+          {/* show error messages (eligibility / submission) */}
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">{error}</div>
+          )}
 
           <div className="flex justify-center">
             <button

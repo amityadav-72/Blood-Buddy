@@ -46,7 +46,55 @@ const FindDonor = () => {
               Secure & Private
             </span>
           </div>
+
+          
         </div>
+{/* Gov't blood-bank quick link (eRaktkosh) */}
+<div className="bg-white border-l-4 border-red-500 rounded-lg p-6 mb-8 shadow-sm hover:shadow-md transition">
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+    {/* Left content */}
+    <div className="flex items-start gap-4">
+      <div className="bg-red-50 text-red-600 rounded-full p-3">
+        <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 2C6 6 4 8.5 4 11.5A6 6 0 0010 17a6 6 0 006-5.5C16 8.5 14 6 10 2z"/>
+        </svg>
+      </div>
+
+      <div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h3 className="text-xl font-bold text-red-700">
+            Search Government Blood Banks
+          </h3>
+          <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded">
+            eRaktkosh • Official
+          </span>
+        </div>
+
+        <p className="mt-2 text-gray-600">
+          Check real-time blood availability from registered government blood
+          banks across India using the official eRaktkosh portal.
+        </p>
+      </div>
+    </div>
+
+    {/* Right button */}
+    <div>
+      <a
+        href="https://eraktkosh.mohfw.gov.in/eraktkoshPortal/#/publicPages/bloodAvailabilitySearch"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-5 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+      >
+        Open eRaktkosh
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4M21 12H3"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+</div>
 
       </div>
 

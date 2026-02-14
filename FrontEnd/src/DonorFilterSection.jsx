@@ -10,10 +10,7 @@ function DonorFilterSection() {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Store map center
   const [mapCenter, setMapCenter] = useState([20.9374, 77.7796]);
-
-  // NEW STATES (Required for routing feature)
   const [userLocation, setUserLocation] = useState(null);
   const [selectedDonor, setSelectedDonor] = useState(null);
 
@@ -24,30 +21,31 @@ function DonorFilterSection() {
     }
 
     setLoading(true);
-    let lat, lon;
 
     try {
+      let lat, lon;
+
       if (locationOption === "auto") {
         const position = await new Promise((resolve, reject) =>
           navigator.geolocation.getCurrentPosition(resolve, reject)
         );
+
         lat = position.coords.latitude;
         lon = position.coords.longitude;
       } else {
         const res = await axios.get(
           `https://nominatim.openstreetmap.org/search?format=json&q=${manualLocation}`
         );
-        if (res.data.length === 0) throw new Error("Location not found!");
+
+        if (!res.data.length) throw new Error("Location not found");
 
         lat = res.data[0].lat;
         lon = res.data[0].lon;
       }
 
-      // Update map & user's location
       setMapCenter([parseFloat(lat), parseFloat(lon)]);
       setUserLocation({ lat: parseFloat(lat), lon: parseFloat(lon) });
 
-      // Fetch donors from backend
       const donorRes = await axios.get(
         `${process.env.REACT_APP_API_URL}/donors/nearby`,
         {
@@ -56,138 +54,95 @@ function DonorFilterSection() {
       );
 
       setDonors(donorRes.data.donors || donorRes.data);
-    } catch (error) {
-      console.error(error);
-      alert("Error fetching donors. Please check your location or backend.");
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching donors");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section style={{ padding: "70px 0 40px", backgroundColor: "#fafafa" }}>
-      <div
-        className="container"
-        style={{ maxWidth: "1000px", margin: "auto", textAlign: "center" }}
-      >
-        <h2
-          style={{
-            marginBottom: "25px",
-            color: "#d90429",
-            fontSize: "28px",
-            fontWeight: "700",
-          }}
-        >
+    <section className="bg-gray-50 py-10">
+
+      <div className="max-w-6xl mx-auto px-4">
+
+        {/* TITLE */}
+        <h2 className="text-3xl font-bold text-center text-red-600 mb-8">
           🩸 Find Blood Donors Near You
         </h2>
 
-        {/* FILTER CONTROLS */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "12px",
-            background: "#fff",
-            padding: "15px 25px",
-            borderRadius: "12px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        {/* FILTER CARD */}
+        <div className="bg-white shadow-md rounded-xl p-6 flex flex-wrap gap-4 justify-center items-center">
+
+          <div className="flex gap-3">
             <label>
               <input
                 type="radio"
-                name="locationOption"
                 value="auto"
                 checked={locationOption === "auto"}
                 onChange={(e) => setLocationOption(e.target.value)}
               />
-              Use My Location
+              <span className="ml-2">Use My Location</span>
             </label>
 
             <label>
               <input
                 type="radio"
-                name="locationOption"
                 value="manual"
                 checked={locationOption === "manual"}
                 onChange={(e) => setLocationOption(e.target.value)}
               />
-              Manual
+              <span className="ml-2">Manual</span>
             </label>
           </div>
 
           {locationOption === "manual" && (
             <input
               type="text"
-              placeholder="Enter city or address"
+              placeholder="Enter city"
               value={manualLocation}
               onChange={(e) => setManualLocation(e.target.value)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-                width: "200px",
-              }}
+              className="border rounded-lg px-3 py-2"
             />
           )}
 
           <select
             value={bloodGroup}
             onChange={(e) => setBloodGroup(e.target.value)}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-            }}
+            className="border rounded-lg px-3 py-2"
           >
             <option value="">Blood Group</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
+            <option>A+</option>
+            <option>A-</option>
+            <option>B+</option>
+            <option>B-</option>
+            <option>AB+</option>
+            <option>AB-</option>
+            <option>O+</option>
+            <option>O-</option>
           </select>
 
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-            }}
+            className="border rounded-lg px-3 py-2"
           >
             <option value={10}>10</option>
             <option value={20}>20</option>
             <option value={50}>50</option>
-            <option value={100}>100</option>
           </select>
 
           <button
             onClick={handleFetch}
-            disabled={loading}
-            style={{
-              padding: "10px 22px",
-              backgroundColor: "#d90429",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
+            className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700"
           >
             {loading ? "Searching..." : "Find Donors"}
           </button>
         </div>
 
         {/* MAP */}
-        <div style={{ marginTop: "40px", borderRadius: "10px", overflow: "hidden" }}>
+        <div className="mt-10 rounded-xl overflow-hidden shadow-md">
           <MapView
             donors={donors}
             center={mapCenter}
@@ -196,59 +151,76 @@ function DonorFilterSection() {
           />
         </div>
 
-        {/* DONOR TABLE */}
+        {/* DONOR LIST */}
         {donors.length > 0 && (
-          <div style={{ marginTop: "50px", overflowX: "auto" }}>
-            <h3 style={{ textAlign: "center", marginBottom: "15px" }}>
+          <div className="mt-12 bg-white p-6 rounded-xl shadow-md">
+
+            <h3 className="text-xl font-bold mb-4 text-center">
               Nearby Donors
             </h3>
 
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                backgroundColor: "#fff",
-                borderRadius: "10px",
-                overflow: "hidden",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              }}
-            >
-              <thead style={{ backgroundColor: "#d90429", color: "#fff" }}>
-                <tr>
-                  <th style={{ padding: "12px" }}>Name</th>
-                  <th style={{ padding: "12px" }}>City</th>
-                  <th style={{ padding: "12px" }}>Distance (km)</th>
-                  <th style={{ padding: "12px" }}>Contact</th>
-                </tr>
-              </thead>
+            <div className="overflow-x-auto">
+              <table className="w-full text-center border">
 
-              <tbody>
-                {donors.map((donor, index) => (
-                  <tr
-                    key={index}
-                    onClick={() => setSelectedDonor(donor)}
-                    style={{
-                      textAlign: "center",
-                      borderBottom: "1px solid #eee",
-                      cursor: "pointer",
-                      backgroundColor:
-                        selectedDonor?.name === donor.name ? "#ffe6e6" : "white",
-                    }}
-                  >
-                    <td style={{ padding: "10px" }}>{donor.name}</td>
-                    <td style={{ padding: "10px" }}>{donor.city}</td>
-                    <td style={{ padding: "10px" }}>
-                      {donor.distance_km ? donor.distance_km : "—"}
-                    </td>
-                    <td style={{ padding: "10px", color: "#0077cc" }}>
-                      {donor.contact}
-                    </td>
+                <thead className="bg-red-600 text-white">
+                  <tr>
+                    <th className="p-3">Name</th>
+                    <th>City</th>
+                    <th>Distance</th>
+                    <th>Contact</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody>
+                  {donors.map((donor, index) => (
+                    <tr
+                      key={index}
+                      onClick={() => setSelectedDonor(donor)}
+                      className={`border-b cursor-pointer hover:bg-red-50 ${
+                        selectedDonor?.name === donor.name && "bg-red-100"
+                      }`}
+                    >
+                      <td className="p-2">{donor.name}</td>
+                      <td>{donor.city}</td>
+                      <td>{donor.distance_km || "—"}</td>
+                      <td className="text-blue-600">{donor.contact}</td>
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+            </div>
           </div>
         )}
+
+        {/* eRaktKosh SECTION */}
+        {bloodGroup && (
+          <div className="mt-12 bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+
+            <h3 className="text-2xl font-bold text-red-700 mb-3">
+              🏥 Need More Donors?
+            </h3>
+
+            <p className="text-gray-700 mb-4">
+              Check live government blood stock for
+              <span className="font-semibold"> {bloodGroup} </span>
+              in <strong>Maharashtra → Amravati</strong>
+            </p>
+
+            <button
+              onClick={() =>
+                window.open(
+                  "https://eraktkosh.mohfw.gov.in/eraktkoshPortal/#/publicPages/bloodAvailabilitySearch",
+                  "_blank"
+                )
+              }
+              className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700"
+            >
+              View on eRaktKosh →
+            </button>
+          </div>
+        )}
+
       </div>
     </section>
   );
