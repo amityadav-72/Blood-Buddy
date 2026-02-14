@@ -15,6 +15,10 @@ function DonorFilterSection({ navMode, setNavMode }) {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedDonor, setSelectedDonor] = useState(null);
   const lastFetchLocation = useRef(null);
+const lastUpdateTime = useRef(0);
+
+
+
   
 
 const getDistance = (lat1, lon1, lat2, lon2) => {
@@ -41,8 +45,14 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
-      setUserLocation({ lat, lon });
-      setMapCenter([lat, lon]);
+      const now = Date.now();
+
+if (now - lastUpdateTime.current > 10000) {
+  setUserLocation({ lat, lon });
+  setMapCenter([lat, lon]);
+  lastUpdateTime.current = now;
+}
+
 
       // 🚀 AUTO FETCH EVERY 500m
       if (lastFetchLocation.current && bloodGroup) {

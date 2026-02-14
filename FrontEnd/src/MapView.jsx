@@ -138,7 +138,7 @@ function RoutingMachine({ userLocation, donor, setRouteInfo, setSteps }) {
 }
 
 //////////////////////////////////////////////////////
-// 🗺 MAIN
+// 🗺 MAIN COMPONENT
 //////////////////////////////////////////////////////
 export default function MapView({
   donors = [],
@@ -164,7 +164,7 @@ export default function MapView({
   }, [steps, voiceEnabled, navMode]);
 
   //////////////////////////////////////////////////////
-  // 🧭 ROTATE USER ARROW
+  // ROTATE USER ARROW
   //////////////////////////////////////////////////////
   useEffect(() => {
     const handleOrientation = (e) => {
@@ -184,7 +184,7 @@ export default function MapView({
     <div className="relative">
 
       {/* NAV BUTTONS */}
-      <div className="absolute top-4 right-4 flex gap-2 z-[1200]">
+      <div className="absolute top-4 right-4 flex gap-2 z-[1400]">
         <button
           onClick={() => setNavMode(!navMode)}
           className="bg-red-600 text-white px-4 py-2 rounded-lg shadow"
@@ -240,7 +240,7 @@ export default function MapView({
 
       {/* TOP NAV INSTRUCTION */}
       {navMode && currentStep && (
-        <div className="absolute top-0 left-0 w-full flex justify-center z-[1100]">
+        <div className="absolute top-0 left-0 w-full flex justify-center z-[1300]">
           <div className="mt-2 w-[95%] max-w-2xl bg-red-600 text-white rounded-xl shadow-lg px-4 py-3 flex items-center justify-center gap-3">
             <span className="text-2xl">
               {getDirectionArrow(currentStep.text)}
