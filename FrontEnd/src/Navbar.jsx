@@ -15,7 +15,7 @@ const Navbar = ({ navMode }) => {
       className={`
         ${navMode ? "hidden" : "flex"}
         w-full items-center bg-white border-b shadow-sm
-        fixed top-0 left-0 z-50 transition-all duration-300
+        fixed top-0 left-0 z-20 transition-all duration-300
       `}
     >
       <div className="container mx-auto px-4">
@@ -54,7 +54,7 @@ const Navbar = ({ navMode }) => {
               transition-all duration-300
             `}
           >
-            <ul className="flex flex-col lg:flex-row lg:items-center lg:space-x-10 px-6 lg:px-0 py-4 lg:py-0">
+            <ul className="flex flex-col lg:flex-row lg:items-center lg:space-x-10 px-6 lg:px-0 py-4 lg:py-0 z-2000">
 
               <ListItem NavLink="/" onClick={() => setOpen(false)}>Home</ListItem>
               <ListItem NavLink="/find-donor" onClick={() => setOpen(false)}>Find Donor</ListItem>
