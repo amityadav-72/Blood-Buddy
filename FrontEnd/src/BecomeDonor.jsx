@@ -17,6 +17,7 @@ const BecomeDonor = () => {
   const [locationStatus, setLocationStatus] = useState('idle');
   const [error, setError] = useState('');
   const [manualAddress, setManualAddress] = useState(false);
+  const [isWhatsappSameAsMobile, setIsWhatsappSameAsMobile] = useState(false);
   const [eligibility, setEligibility] = useState({
   tattoo: "",
   disease: "",
@@ -86,7 +87,26 @@ const BecomeDonor = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === "mobile" && isWhatsappSameAsMobile) {
+        updated.whatsapp = value;
+      }
+      return updated;
+    });
+  };
+
+  const handleWhatsappSameToggle = (e) => {
+    const isChecked = e.target.checked;
+    setIsWhatsappSameAsMobile(isChecked);
+
+    if (isChecked) {
+      setFormData(prev => ({
+        ...prev,
+        whatsapp: prev.mobile,
+      }));
+    }
   };
 
   const handleEligibilityChange = (e) => {
@@ -209,6 +229,7 @@ const BecomeDonor = () => {
       whatsapp: "",
       address: "",
     });
+    setIsWhatsappSameAsMobile(false);
 
     setLocationStatus("idle");
 
@@ -470,6 +491,15 @@ const BecomeDonor = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">WhatsApp Number *</label>
+              <label className="mt-2 mb-1 inline-flex items-center text-xs text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={isWhatsappSameAsMobile}
+                  onChange={handleWhatsappSameToggle}
+                  className="mr-2 h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                />
+                Same as mobile number
+              </label>
               <input
                 type="tel"
                 name="whatsapp"
@@ -479,6 +509,7 @@ const BecomeDonor = () => {
                 pattern="[0-9]{10}"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                 placeholder="10-digit WhatsApp number"
+                disabled={isWhatsappSameAsMobile}
               />
             </div>
           </div>
