@@ -1,9 +1,17 @@
 from fastapi import FastAPI
-from routes.donor_routes import router as donor_router
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Blood Buddy API", version="1.0")
+from routes.donor_routes import router as donor_router
+from routes.admin_routes import router as admin_router
 
+app = FastAPI(
+    title="Blood Buddy API",
+    version="1.0"
+)
+
+# ===============================
+# CORS Middleware
+# ===============================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,8 +20,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ===============================
+# Include Routers
+# ===============================
 app.include_router(donor_router)
+app.include_router(admin_router)
 
+# ===============================
+# Root Route
+# ===============================
 @app.get("/")
 def root():
     return {"message": "Welcome to Blood Buddy API"}

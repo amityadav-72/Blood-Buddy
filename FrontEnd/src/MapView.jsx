@@ -184,7 +184,11 @@ export default function MapView({
     <div className="relative">
 
       {/* NAV BUTTONS */}
-      <div className="absolute top-4 right-4 flex gap-2 z-[1400]">
+      <div
+        className={`absolute top-4 right-4 flex gap-2 ${
+          navMode ? "z-[1200]" : "z-10"
+        }`}
+      >
         <button
           onClick={() => setNavMode(!navMode)}
           className="bg-red-600 text-white px-4 py-2 rounded-lg shadow"
