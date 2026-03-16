@@ -11,12 +11,12 @@ import palashPhoto from "./photo/young-boy.png";
 const About = () => {
  
   const teamMembers = [
-    { id: 1, name: 'Miss. Payal Sobhani', role: 'Team Lead & Data Collector', photo: payalPhoto },
-    { id: 2, name: 'Mr. Amit Kumar Yadav', role: 'Cloud Engineer & Marketing Expert', photo: amitPhoto },
-    { id: 3, name: 'Mr. Anurag Rokade', role: 'Backend Engineer & Data Collector', photo: anuragPhoto },
-    { id: 4, name: 'Miss. Janhavi Uchitkar', role: 'Backend Engineer & Figma UI', photo: janhaviPhoto },
-    { id: 5, name: 'Mr. Ghazi Fuzail', role: 'UI & Social Media Manager', photo: ghaziPhoto },
-    { id: 6, name: 'Mr. Palash Dhande', role: 'Front-end Engineer & Backend Support', photo: palashPhoto }
+    { id: 1, name: 'Miss. Payal Sobhani', role: 'Team Lead', photo: payalPhoto },
+    { id: 2, name: 'Mr. Amit Kumar Yadav', role: 'Full-Stack Developer', photo: amitPhoto },
+    { id: 3, name: 'Mr. Anurag Rokade', role: 'Backend Engineer', photo: anuragPhoto },
+    { id: 4, name: 'Miss. Janhavi Uchitkar', role: 'Database Administrator', photo: janhaviPhoto },
+    { id: 5, name: 'Mr. Ghazi Fuzail', role: 'UI & UX Designer', photo: ghaziPhoto },
+    { id: 6, name: 'Mr. Palash Dhande', role: 'Front-end Engineer', photo: palashPhoto }
   ];
 
   return (<>
