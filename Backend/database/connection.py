@@ -2,15 +2,20 @@ from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
 
-# Load variables from .env file
+# Load environment variables
 load_dotenv()
 
-# Get MongoDB URI from environment or default to local
+# MongoDB URI
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
-# Connect to MongoDB
+# MongoDB Client
 client = MongoClient(MONGO_URI)
 
-# Use your database and collection
+# Database
 db = client["bloodbuddy"]
+
+# Collection
 donor_collection = db["donors"]
+
+# Alias for admin model
+collection = donor_collection

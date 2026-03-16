@@ -1,6 +1,5 @@
 import pandas as pd
 import requests
-import random
 import time
 import os
 
@@ -70,16 +69,6 @@ def normalize_blood_group(bg):
 
 
 # ==========================
-# Random Amravati Coordinates
-# ==========================
-def random_amravati_coordinates():
-    return (
-        random.uniform(20.90, 21.05),
-        random.uniform(77.70, 77.85),
-    )
-
-
-# ==========================
 # Load Excel
 # ==========================
 df = pd.read_excel("students.xlsx", dtype=str)
@@ -97,6 +86,7 @@ inserted = 0
 skipped_mobile = 0
 invalid_name = 0
 missing_blood_group = 0
+skipped_location = 0
 
 # ==========================
 # Import Loop
@@ -136,37 +126,41 @@ for index, row in df.iterrows():
     # Address → Geocoding
     # ==========================
     if pd.isna(address) or not str(address).strip():
-        latitude, longitude = random_amravati_coordinates()
-        city = "Amravati"
+        print("❌ Skipped → Missing address")
+        skipped_location += 1
+        continue
 
-    else:
-        try:
-            response = requests.get(
-                "https://nominatim.openstreetmap.org/search",
-                params={"format": "json", "q": f"{address}, Maharashtra, India"},
-                headers={"User-Agent": "BloodBuddy"},
-                timeout=8,
-            )
+    try:
+        response = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={"format": "json", "q": f"{address}, Maharashtra, India"},
+            headers={"User-Agent": "BloodBuddy"},
+            timeout=8,
+        )
 
-            data = response.json()
+        data = response.json()
 
-            if data:
-                latitude = float(data[0]["lat"])
-                longitude = float(data[0]["lon"])
-                city = address
-            else:
-                latitude, longitude = random_amravati_coordinates()
-                city = "Amravati"
+        if data:
+            latitude = float(data[0]["lat"])
+            longitude = float(data[0]["lon"])
+            city = address
+        else:
+            print("❌ Skipped → Geocoding failed")
+            skipped_location += 1
+            continue
 
-            time.sleep(1)
+        time.sleep(1)
 
-        except:
-            latitude, longitude = random_amravati_coordinates()
-            city = "Amravati"
+    except Exception as e:
+        print("❌ Skipped → Geocoding error")
+        skipped_location += 1
+        continue
 
     # ✅ Coordinate safety
     if not is_valid_coordinate(latitude, longitude):
-        latitude, longitude = random_amravati_coordinates()
+        print("❌ Skipped → Invalid coordinates")
+        skipped_location += 1
+        continue
 
     # ==========================
     # Prepare document
@@ -174,7 +168,7 @@ for index, row in df.iterrows():
     donor = {
         "name": name,
         "contact": mobile,
-        "blood_group": blood_group,  # can be None
+        "blood_group": blood_group,
         "city": city,
         "latitude": latitude,
         "longitude": longitude,
@@ -203,4 +197,5 @@ print("\n✅ IMPORT COMPLETED")
 print("Inserted:", inserted)
 print("Skipped Invalid Mobile:", skipped_mobile)
 print("Skipped Invalid Name:", invalid_name)
+print("Skipped Missing/Invalid Location:", skipped_location)
 print("Inserted With Missing Blood Group:", missing_blood_group)
